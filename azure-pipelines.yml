@@ -28,7 +28,9 @@ steps:
   displayName: 'Restore .NET'
   inputs:
     command: 'restore'
-    projects: '$(solution}'
+    projects: |
+      $(solution}
+      $(project)
     feedsToUse: 'select'
 
 - task: DotNetCoreCLI@2
