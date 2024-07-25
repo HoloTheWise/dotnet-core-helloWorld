@@ -1,0 +1,60 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  solution: '**/dotnet-core-helloWorld.sln'
+  project: '**/dotnet-core-helloWorld.csproj'
+
+steps:
+- task: UseDotNet@2
+  displayName: '.NET Install'
+  inputs:
+    packageType: 'sdk'
+    version: 8.x
+    performMultiLevelLookup: true
+    includePreviewVersions: true
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore .NET'
+  inputs:
+    command: 'restore'
+    projects: '$(solution}'
+    feedsToUse: 'select'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build .NET'
+  inputs:
+    command: 'build'
+    projects: '$(project)'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: |
+      $(solution)
+      $(project)
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'AzureTestProjectDotnetCore'
+    publishLocation: 'Container'
